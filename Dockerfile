@@ -12,7 +12,7 @@ WORKDIR /app
 
 # TODO(step-4b): copy package.json and package-lock.json, then install deps.
 COPY app/package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm install --no-save --omit=dev proxy-addr@2.0.8
 
 # TODO(step-4c): copy the rest of the app source into /app.
 COPY app/ ./
@@ -23,6 +23,10 @@ COPY app/ ./
 
 # TODO(step-4d): set the runtime base image (same tag as step-4a for consistency).
 FROM node:20.11-slim
+
+# Patch base OS packages and remove npm/npx (unused in production runtime) to clear CRITICAL CVEs
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 WORKDIR /app
 
